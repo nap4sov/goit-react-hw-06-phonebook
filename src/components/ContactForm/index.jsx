@@ -1,40 +1,53 @@
-import { nanoid } from 'nanoid'
-import { useState } from 'react'
-import PropTypes from 'prop-types'
-import styles from './styles.module.scss'
+import { nanoid } from 'nanoid';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from 'redux/actions';
+import styles from './styles.module.scss';
 
-export default function ContactForm({onSubmit}) {
-    const [name, setName] = useState('')
-    const [number, setNumber] = useState('')
+const ContactForm = () => {
+    const dispatch = useDispatch();
+    const contacts = useSelector(state => state.contacts.items);
+    const [name, setName] = useState('');
+    const [number, setNumber] = useState('');
+
+    const listContainsContact = contact => {
+        return contacts.some(({ name }) => name.toLowerCase() === contact.name.toLowerCase());
+    };
 
     const handleInput = event => {
-        const {name, value} = event.currentTarget
-        
+        const { name, value } = event.currentTarget;
+
         switch (name) {
             case 'name':
-                setName(value)
+                setName(value);
                 break;
             case 'number':
-                setNumber(value)
+                setNumber(value);
                 break;
-        
+
             default:
                 break;
         }
-    }
+    };
 
     const handleSubmit = event => {
-        event.preventDefault()
-        const contact = { name, number, id: nanoid() }
-        onSubmit(contact)
-        setName('')
-        setNumber('')
-    }
- 
+        event.preventDefault();
+        const contact = { name, number, id: nanoid() };
+
+        if (listContainsContact(contact)) {
+            return alert(`${contact.name} is already in contacts.`);
+        }
+
+        dispatch(addContact(contact));
+        setName('');
+        setNumber('');
+    };
 
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
-            <label className={styles.label}> Name
+            <label className={styles.label}>
+                {' '}
+                Name
                 <input
                     onChange={handleInput}
                     value={name}
@@ -46,7 +59,9 @@ export default function ContactForm({onSubmit}) {
                     required
                 />
             </label>
-            <label className={styles.label}> Number
+            <label className={styles.label}>
+                {' '}
+                Number
                 <input
                     onChange={handleInput}
                     value={number}
@@ -58,10 +73,11 @@ export default function ContactForm({onSubmit}) {
                     required
                 />
             </label>
-            <button className={styles.button} type="submit">Add contact</button>
-        </form>)
-}
+            <button className={styles.button} type="submit">
+                Add contact
+            </button>
+        </form>
+    );
+};
 
-ContactForm.propTypes = {
-    onSubmit: PropTypes.func.isRequired
-}
+export default ContactForm;

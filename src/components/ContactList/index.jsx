@@ -1,28 +1,31 @@
-import ContactListItem from "components/ContactListItem"
-import Notification from "components/Notification"
-import PropTypes from 'prop-types'
-import styles from './styles.module.scss'
+import { useSelector } from 'react-redux';
+import ContactListItem from 'components/ContactListItem';
+import Notification from 'components/Notification';
+import styles from './styles.module.scss';
 
-const ContactList = ({ contacts, onDeleteClick }) => {
-    if (contacts.length === 0) {
-        return (<Notification title='No contact with such name found' />)
+const ContactList = () => {
+    const contacts = useSelector(state => state.contacts.items);
+    const filterValue = useSelector(state => state.contacts.filter);
+
+    const contactsListEmpty = contacts.length === 0;
+    const filteredContacts = contacts.filter(({ name }) =>
+        name.toLowerCase().includes(filterValue),
+    );
+
+    if (contactsListEmpty) {
+        return <Notification title="Contacts list is empty" />;
     }
-    
-    return (<ul className={styles.list}>
-        {contacts.map(({ id, name, number }) => 
-            <ContactListItem key={id} id={id} name={name} number={number} onDeleteClick={onDeleteClick} />
-        )}
-    </ul>)
-}
+    if (!contactsListEmpty && filteredContacts.length === 0) {
+        return <Notification title="No contact with such name found" />;
+    }
 
-ContactList.propTypes = {
-    contacts: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        number: PropTypes.string.isRequired,
-    })),
-    onDeleteClick: PropTypes.func.isRequired
-}
+    return (
+        <ul className={styles.list}>
+            {filteredContacts.map(({ id, name, number }) => (
+                <ContactListItem key={id} id={id} name={name} number={number} />
+            ))}
+        </ul>
+    );
+};
 
-export default ContactList
-
+export default ContactList;
