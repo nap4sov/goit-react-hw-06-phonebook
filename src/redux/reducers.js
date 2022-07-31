@@ -1,10 +1,17 @@
 import { combineReducers, createReducer } from '@reduxjs/toolkit';
 import { addContact, deleteContact, filterContacts } from './actions';
+import { persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
 
 const LS_KEY = 'contacts';
-const storedContacts = JSON.parse(localStorage.getItem(LS_KEY));
 
-const itemsReducer = createReducer(storedContacts, {
+const contactsPersistConfig = {
+    key: LS_KEY,
+    storage,
+    blacklist: 'filter',
+};
+
+const itemsReducer = createReducer([], {
     [addContact]: (state, { payload }) => [payload, ...state],
     [deleteContact]: (state, { payload }) => state.filter(({ id }) => id !== payload),
 });
@@ -14,8 +21,11 @@ const filterReducer = createReducer('', {
 });
 
 export const rootReducer = {
-    contacts: combineReducers({
-        items: itemsReducer,
-        filter: filterReducer,
-    }),
+    contacts: persistReducer(
+        contactsPersistConfig,
+        combineReducers({
+            items: itemsReducer,
+            filter: filterReducer,
+        }),
+    ),
 };
